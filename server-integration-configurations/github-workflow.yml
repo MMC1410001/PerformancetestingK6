@@ -1,0 +1,52 @@
+name: K6 Performance Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 0 * * 1'  # Run every Monday at midnight
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  k6_performance_tests:
+    name: Run K6 Performance Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install k6
+        run: |
+          curl -L https://example.com -o k6.tar.gz
+          tar -xzf k6.tar.gz
+          sudo mv k6-v0.47.0-linux-amd64/k6 /usr/local/bin/k6
+          rm -rf k6-v0.47.0-linux-amd64 k6.tar.gz
+          k6 version
+      
+      - name: Create .env file
+        run: |
+          echo "ALERT_EMAIL_USER=${{ secrets.ALERT_EMAIL_USER }}" > .env
+          echo "ALERT_EMAIL_PASS=${{ secrets.ALERT_EMAIL_PASS }}" >> .env
+      
+      - name: Run K6 tests
+        run: node run-async-k6.js
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: k6-performance-reports
+          path: reports/
+          retention-days: 30

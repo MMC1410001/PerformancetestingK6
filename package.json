@@ -1,0 +1,21 @@
+{
+  "name": "John Doe",
+  "version": "1.0.0",
+  "main": "alert-email.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "chartjs-node-canvas": "^5.0.0",
+    "dotenv": "^16.5.0",
+    "exceljs": "^4.4.0",
+    "nodemailer": "^7.0.3"
+  }
+}
