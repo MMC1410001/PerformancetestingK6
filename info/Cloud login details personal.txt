@@ -1,3 +1,0 @@
-K6 login credentials:
-email: email@example.com
-Pass: Passafana*&56

@@ -1,5 +1,0 @@
-Threshold for Website: 
-Users on Website max : 1000 users
-Users on chatbot site: 500 users
-Max response time for chatbt response : 10s
-Min Website load time: 3s
