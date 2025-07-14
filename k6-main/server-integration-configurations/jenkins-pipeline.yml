@@ -1,0 +1,63 @@
+pipeline {
+    agent {
+        docker {
+            image 'node:18-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
+    
+    environment {
+        K6_VERSION = '0.47.0'
+        ALERT_EMAIL_USER = credentials('k6-alert-email-user')
+        ALERT_EMAIL_PASS = credentials('k6-alert-email-pass')
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Setup') {
+            steps {
+                sh '''
+                    # Install k6
+                    apk add --no-cache curl ca-certificates
+                    curl -L https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-amd64.tar.gz -o k6.tar.gz
+                    tar -xzf k6.tar.gz
+                    mv k6-v${K6_VERSION}-linux-amd64/k6 /usr/local/bin/k6
+                    rm -rf k6-v${K6_VERSION}-linux-amd64 k6.tar.gz
+                    
+                    # Install Node.js dependencies
+                    npm ci
+                '''
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    # Create .env file with credentials
+                    echo "ALERT_EMAIL_USER=${ALERT_EMAIL_USER}" > .env
+                    echo "ALERT_EMAIL_PASS=${ALERT_EMAIL_PASS}" >> .env
+                    
+                    # Run the test suite
+                    node run-async-k6.js
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
+        }
+        success {
+            echo 'All performance tests completed successfully!'
+        }
+        failure {
+            echo 'Performance tests failed. Check the reports for details.'
+        }
+    }
+}

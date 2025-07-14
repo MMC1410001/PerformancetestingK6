@@ -1,0 +1,3 @@
+K6 login credentials:
+email: isthere.tester2@gmail.com
+Pass: Grauytiwujkwa@#123
